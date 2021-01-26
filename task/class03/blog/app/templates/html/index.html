@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% block titleBlock %}
+    首页
+{% endblock %}
+{% block banner %}
+    <div class="banner">
+        <div class="cont w1000">
+            <div class="title">
+                <h3>Lz<br/>BLOG</h3>
+                <h4>moongy</h4>
+            </div>
+            <div class="amount">
+                <p><span class="text">访问量</span><span class="access">{{ data.read }}</span></p>
+                <p><span class="text">日志</span><span class="daily-record">{{ data.logs }}</span></p>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block content %}
+    <div class="content">
+        <div class="cont w1000">
+            <div class="title">
+                <span class="layui-breadcrumb" lay-separator="|">
+                  <a href="javascript:;" class="active">设计文章</a>
+                  <a href="javascript:;">前端文章</a>
+                  <a href="javascript:;">旅游杂记</a>
+                </span>
+            </div>
+            <!-- 这里是列表的填充区域，其数据需要从后端返回 -->
+            <div class="list-item"></div>
+            <!-- 这里是分页的显示区域 -->
+            <div id="demo" style="text-align: center;"></div>
+        </div>
+    </div>
+{% endblock %}
+{% block scriptScrip2 %}
+    <!-- 这里 base.html 中已经加载了 layui.js -->
+    <script type="text/javascript">
+        // 这里使用了 layui 的一个分页模板，填充到 demo 中
+        layui.config({
+            base: '../../static/res/js/util/'
+        }).use(['element', 'laypage', 'jquery', 'menu'], function () {
+            element = layui.element, laypage = layui.laypage, $ = layui.$, menu = layui.menu;
+            console.log({{ data.count }})
+            laypage.render({
+                elem: 'demo',
+                count: {{ data.count }}, //数据总数，从服务端得到 Centent 的数量
+                limit: 4,
+                jump: function (obj, first) {
+                    //obj包含了当前分页的所有参数，比如：
+                    //obj包含了当前分页的所有参数，比如：
+                    {#console.log(obj.curr); //得到当前页，以便向服务端请求对应页的数据。#}
+                    {#console.log(obj.limit); //得到每页显示的条数#}
+                    {#fillTable({{ data.data|tojson }}, (obj.curr) * obj.limit); //页面填充#}
+                    $('.layui-laypage .layui-laypage-curr em').css('background', '#009688')
+                    cutAdvertList(obj.curr)  //这个是数据请求接口的函数封装
+                    //首次不执行
+                    if (!first) {
+                        //do something
+                    }
+                }
+            });
+
+            {#menu.init();#}
+        });
+
+        function cutAdvertList(a) {
+            $.ajax({
+                type: 'get',
+                dataType: 'json',
+                // 这里是 /index/data，因为有蓝图的前缀
+                url: '/index/data',//数据请求接口，通过这个接口视图函数，来进行数据传递
+                data: {
+                    page: a,
+                    pageSize: "4"
+                },
+                success: function (data) {
+                    var list = ""
+                    // console.log(data.data)
+                    // 填充的函数
+                    fillTable(data.data)
+                }
+            })
+        }
+
+        //填充表格数据
+        function fillTable(data, num) {
+            // 通过这个接口视图函数，来进行数据传递
+            $(".list-item").html('');
+            // 填充表格中的每一项
+            $.each(data, function (index, obj) {
+                // id 很多时候并不是连续的，如果为了显示比较连续的记录数，可以这样根据当前页和每页条数动态的计算记录序号
+                index = index + num + 1;
+                var info = '';
+
+                /*
+                {#info += '<div class="item">';#}
+                {#info += '<div class="layui-fluid">';#}
+                {#info += '<div class="layui-row">';#}
+                {#info += '<div class="layui-col-xs12 layui-col-sm4 layui-col-md5">';#}
+                {#info += '<div class="img"><img src="' + obj.src +'" alt=""></div>';#}
+                {#info += '</div>';#}
+                {#info += '<div class="layui-col-xs12 layui-col-sm8 layui-col-md7">';#}
+                {#info += '<div class="item-cont">';#}
+                {#info += '<h3>' + obj.h3;#}
+                {#info += '<button class="layui-btn layui-btn-danger new-icon">new</button>';#}
+                {#info += '</h3>';#}
+                {#info += '<h5>设计文章</h5>';#}
+                {#info += '<p>' + obj.p +'</p>';#}
+                {#info += '<a href="/new/details/'+obj.id+'" class="go-icon"></a>';#}
+                {#info += '</div>';#}
+                {#info += '</div>';#}
+                {#info += '</div>';#}
+                {#info += '</div>';#}
+                {#info += '</div>';#}
+                {#$(".list-item").append(info);#}
+                */
+                
+                info += '<div class="item">';
+                info += '<div class="layui-fluid">';
+                info += '<div class="layui-row">';
+                info += '<div class="layui-col-xs12 layui-col-sm4 layui-col-md5">';
+                info += '<div class="img"><img src="' + obj.src + '" alt=""></div>';
+                info += '</div>';
+                info += '<div class="layui-col-xs12 layui-col-sm8 layui-col-md7">';
+                info += '<div class="item-cont">';
+                info += '<h3>' + obj.title;
+                info += '<button class="layui-btn layui-btn-danger new-icon">new</button>';
+                info += '</h3>';
+                info += '<h5>' + obj.tag + '</h5>';
+                info += '<p>' + obj.p + '</p>';
+                info += '<a href="' + obj.video + '" class="go-icon"></a>';
+                info += '</div>';
+                info += '</div>';
+                info += '</div>';
+                info += '</div>';
+                info += '</div>';
+                $(".list-item").append(info);
+            });
+        }
+    </script>
+{% endblock %}
